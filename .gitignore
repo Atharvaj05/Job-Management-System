@@ -1,0 +1,11 @@
+# Dependency modules
+node_modules/
+dist/
+
+# Databases
+*.db
+*.db-journal
+
+# Configuration 
+.env
+.env.local\n
