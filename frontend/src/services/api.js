@@ -8,28 +8,14 @@ const getHeaders = () => {
 };
 
 const handleResponse = async (res) => {
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        if (res.status === 401 || res.status === 403) {
-            localStorage.removeItem('token');
-        }
-        throw new Error(errorData.error || 'API execution connection fault.');
-    }
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Network runtime error.');
     return res.json();
 };
 
 export const api = {
-    register: (name, email, password) => 
-        fetch(`${API_BASE_URL}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password }) }).then(handleResponse),
-    
-    login: (email, password) => 
-        fetch(`${API_BASE_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) }).then(handleResponse),
-        
-    getJobs: () => fetch(`${API_BASE_URL}/jobs`, { headers: getHeaders() }).then(handleResponse),
-    
-    createJob: (job) => fetch(`${API_BASE_URL}/jobs`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(job) }).then(handleResponse),
-    
-    updateJob: (id, job) => fetch(`${API_BASE_URL}/jobs/${id}`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(job) }).then(handleResponse),
-    
-    deleteJob: (id) => fetch(`${API_BASE_URL}/jobs/${id}`, { method: 'DELETE', headers: getHeaders() }).then(handleResponse)
+    login: (email, password) => fetch(`${API_BASE_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) }).then(handleResponse),
+    register: (name, email, password) => fetch(`${API_BASE_URL}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password }) }).then(handleResponse),
+    getTasks: () => fetch(`${API_BASE_URL}/tasks`, { headers: getHeaders() }).then(handleResponse),
+    createTask: (task) => fetch(`${API_BASE_URL}/tasks`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(task) }).then(handleResponse),
+    getTaskLogs: (id) => fetch(`${API_BASE_URL}/tasks/${id}/logs`, { headers: getHeaders() }).then(handleResponse)
 };

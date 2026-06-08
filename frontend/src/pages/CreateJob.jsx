@@ -78,4 +78,4 @@ export default function CreateJob({ setPage }) {
             </form>
         </div>
     );
-}\n
+}

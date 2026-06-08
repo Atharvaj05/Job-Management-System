@@ -95,4 +95,4 @@ export default function EditJob({ pageState, setPage }) {
             </form>
         </div>
     );
-}\n
+}

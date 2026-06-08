@@ -20,4 +20,4 @@ export default function Navbar({ setPage }) {
             </div>
         </nav>
     );
-}\n
+}

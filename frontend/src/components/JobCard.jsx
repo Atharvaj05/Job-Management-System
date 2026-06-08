@@ -43,4 +43,4 @@ export default function JobCard({ job, onDelete, onEdit }) {
             </div>
         </div>
     );
-}\n
+}
