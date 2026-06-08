@@ -1,41 +1,34 @@
 import db from '../database/db.js';
 
-// The Model Layer completely abstracts raw SQL commands away from business logic.
 export const JobModel = {
-    create: (jobData, callback) => {
-        const query = `INSERT INTO jobs (title, description, status) VALUES (?, ?, ?)`;
-        const params = [jobData.title, jobData.description, jobData.status || 'Pending'];
-        db.run(query, function(err) {
+    create: (jobData, userId, callback) => {
+        const query = `INSERT INTO jobs (title, description, status, userId) VALUES (?, ?, ?, ?)`;
+        db.run(query, [jobData.title, jobData.description, jobData.status || 'Pending', userId], function(err) {
             callback(err, this ? this.lastID : null);
         });
     },
-
-    findAll: (callback) => {
-        const query = `SELECT * FROM jobs ORDER BY createdAt DESC`;
-        db.all(query, [], (err, rows) => callback(err, rows));
+    findAllByUser: (userId, callback) => {
+        const query = `SELECT * FROM jobs WHERE userId = ? ORDER BY createdAt DESC`;
+        db.all(query, [userId], (err, rows) => callback(err, rows));
     },
-
-    findById: (id, callback) => {
-        const query = `SELECT * FROM jobs WHERE id = ?`;
-        db.get(query, [id], (err, row) => callback(err, row));
+    findByIdAndUser: (id, userId, callback) => {
+        const query = `SELECT * FROM jobs WHERE id = ? AND userId = ?`;
+        db.get(query, [id, userId], (err, row) => callback(err, row));
     },
-
-    update: (id, jobData, callback) => {
+    updateByUser: (id, userId, jobData, callback) => {
         const query = `
             UPDATE jobs 
             SET title = ?, description = ?, status = ?, updatedAt = CURRENT_TIMESTAMP 
-            WHERE id = ?
+            WHERE id = ? AND userId = ?
         `;
-        const params = [jobData.title, jobData.description, jobData.status, id];
-        db.run(query, params, function(err) {
+        db.run(query, [jobData.title, jobData.description, jobData.status, id, userId], function(err) {
             callback(err, this ? this.changes : 0);
         });
     },
-
-    delete: (id, callback) => {
-        const query = `DELETE FROM jobs WHERE id = ?`;
-        db.run(query, [id], function(err) {
+    deleteByUser: (id, userId, callback) => {
+        const query = `DELETE FROM jobs WHERE id = ? AND userId = ?`;
+        db.run(query, [id, userId], function(err) {
             callback(err, this ? this.changes : 0);
         });
     }
-};\n
+};
