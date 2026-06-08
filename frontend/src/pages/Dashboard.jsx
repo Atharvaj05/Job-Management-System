@@ -1,76 +1,51 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import JobCard from '../components/JobCard';
 
-export default function Dashboard({ setPage }) {
+export default function Dashboard({ setPage, logOut }) {
     const [jobs, setJobs] = useState([]);
-    const [filter, setFilter] = useState('All');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [title, setTitle] = useState('');
 
-    const fetchJobs = async () => {
-        try {
-            const data = await api.getJobs();
-            setJobs(data);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
+    const reloadData = async () => {
+        try { setJobs(await api.getJobs()); } catch (err) { alert(err.message); }
     };
 
-    useEffect(() => {
-        fetchJobs();
-    }, []);
+    useEffect(() => { reloadData(); }, []);
+
+    const handleCreate = async (e) => {
+        e.preventDefault();
+        if (!title.trim()) return;
+        try {
+            await api.createJob({ title, description: 'Tenant task array operational runtime sequence profile.' });
+            setTitle('');
+            reloadData();
+        } catch (err) { alert(err.message); }
+    };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this job?')) {
-            try {
-                await api.deleteJob(id);
-                setJobs(jobs.filter(job => job.id !== id));
-            } catch (err) {
-                alert('Failed to delete job: ' + err.message);
-            }
-        }
+        try {
+            await api.deleteJob(id);
+            reloadData();
+        } catch (err) { alert(err.message); }
     };
 
-    const filteredJobs = filter === 'All' ? jobs : jobs.filter(j => j.status === filter);
-
-    if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading dashboard execution data...</div>;
-    if (error) return <div style={{ padding: '2rem', color: 'red' }}>Error: {error}</div>;
-
     return (
-        <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '0 1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h1 style={{ margin: 0 }}>Cluster Engine Jobs</h1>
-                <div>
-                    <label style={{ marginRight: '0.5rem', fontWeight: 'bold' }}>Filter System Status:</label>
-                    <select 
-                        value={filter} 
-                        onChange={(e) => setFilter(e.target.value)}
-                        style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                    >
-                        <option value="All">All Statuses</option>
-                        <option value="Pending">Pending</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Failed">Failed</option>
-                    </select>
-                </div>
+        <div style={{ padding: '2rem', maxWidth: '600px', margin: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <h2>Your isolated jobs workspace</h2>
+                <button onClick={logOut} style={{ backgroundColor: 'red', color: 'white', border: 'none', padding: '0.5rem' }}>Disconnect</button>
             </div>
-
-            {filteredJobs.length === 0 ? (
-                <p style={{ textAlign: 'center', color: '#6b7280', marginTop: '3rem' }}>No telemetry data matching current target filters.</p>
-            ) : (
-                filteredJobs.map(job => (
-                    <JobCard 
-                        key={job.id} 
-                        job={job} 
-                        onDelete={handleDelete} 
-                        onEdit={(id) => setPage({ name: 'edit', jobId: id })} 
-                    />
-                ))
-            )}
+            <form onSubmit={handleCreate} style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
+                <input type="text" placeholder="Quick Deploy Title" value={title} onChange={e => setTitle(e.target.value)} style={{ flexGrow: 1, padding: '0.5rem' }} />
+                <button type="submit" style={{ padding: '0.5rem', backgroundColor: 'green', color: 'white', border: 'none' }}>+ Deploy</button>
+            </form>
+            <div>
+                {jobs.map(j => (
+                    <div key={j.id} style={{ padding: '1rem', backgroundColor: '#fff', border: '1px solid #ccc', margin: '0.5rem 0', display: 'flex', justifyContent: 'space-between' }}>
+                        <span><strong>{j.title}</strong> [{j.status}]</span>
+                        <button onClick={() => handleDelete(j.id)} style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button>
+                    </div>
+                ))}
+            </div>
         </div>
     );
-}\n
+}

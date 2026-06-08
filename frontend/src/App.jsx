@@ -1,20 +1,23 @@
-import React, { useState } from 'react';
-import Navbar from './components/Navbar';
+import React, { useState, useEffect } from 'react';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import CreateJob from './pages/CreateJob';
-import EditJob from './pages/EditJob';
 
 export default function App() {
-    const [page, setPage] = useState({ name: 'dashboard', jobId: null });
+    const [auth, setAuth] = useState(!!localStorage.getItem('token'));
+    const [page, setPage] = useState({ name: auth ? 'dashboard' : 'login' });
+
+    const logOut = () => {
+        localStorage.removeItem('token');
+        setAuth(false);
+        setPage({ name: 'login' });
+    };
 
     return (
-        <div>
-            <Navbar setPage={setPage} />
-            <main>
-                {page.name === 'dashboard' && <Dashboard setPage={setPage} />}
-                {page.name === 'create' && <CreateJob setPage={setPage} />}
-                {page.name === 'edit' && <EditJob pageState={page} setPage={setPage} />}
-            </main>
+        <div style={{ backgroundColor: '#f9fafb', minHeight: '100vh', padding: '1rem' }}>
+            {page.name === 'login' && <Login setPage={setPage} setAuth={setAuth} />}
+            {page.name === 'register' && <Register setPage={setPage} />}
+            {page.name === 'dashboard' && auth && <Dashboard setPage={setPage} logOut={logOut} />}
         </div>
     );
-}\n
+}

@@ -1,54 +1,48 @@
 import { JobModel } from '../models/jobModel.js';
 
-// The Service Layer contains core business operations. 
-// In V1/V2, this layer will orchestrate background workers or message queues.
 export const JobService = {
-    createJob: (jobData) => {
+    createJob: (jobData, userId) => {
         return new Promise((resolve, reject) => {
-            if (!jobData.title) return reject(new Error('Job title is required'));
-            JobModel.create(jobData, (err, insertId) => {
+            if (!jobData.title) return reject(new Error('Job designation name mandatory.'));
+            JobModel.create(jobData, userId, (err, insertId) => {
                 if (err) return reject(err);
-                resolve({ id: insertId, ...jobData });
+                resolve({ id: insertId, ...jobData, userId });
             });
         });
     },
-
-    getAllJobs: () => {
+    getAllJobs: (userId) => {
         return new Promise((resolve, reject) => {
-            JobModel.findAll((err, jobs) => {
+            JobModel.findAllByUser(userId, (err, jobs) => {
                 if (err) return reject(err);
                 resolve(jobs);
             });
         });
     },
-
-    getJobById: (id) => {
+    getJobById: (id, userId) => {
         return new Promise((resolve, reject) => {
-            JobModel.findById(id, (err, job) => {
+            JobModel.findByIdAndUser(id, userId, (err, job) => {
                 if (err) return reject(err);
-                if (!job) return reject(new Error('Job not found'));
+                if (!job) return reject(new Error('Target operational job data payload missing or unauthorized.'));
                 resolve(job);
             });
         });
     },
-
-    updateJob: (id, jobData) => {
+    updateJob: (id, userId, jobData) => {
         return new Promise((resolve, reject) => {
-            JobModel.update(id, jobData, (err, changes) => {
+            JobModel.updateByUser(id, userId, jobData, (err, changes) => {
                 if (err) return reject(err);
-                if (changes === 0) return reject(new Error('Job not found or no changes made'));
-                resolve({ id, ...jobData });
+                if (changes === 0) return reject(new Error('Operation blocked. Execution identity mismatch.'));
+                resolve({ id, ...jobData, userId });
             });
         });
     },
-
-    deleteJob: (id) => {
+    deleteJob: (id, userId) => {
         return new Promise((resolve, reject) => {
-            JobModel.delete(id, (err, changes) => {
+            JobModel.deleteByUser(id, userId, (err, changes) => {
                 if (err) return reject(err);
-                if (changes === 0) return reject(new Error('Job not found'));
-                resolve({ message: 'Job successfully deleted' });
+                if (changes === 0) return reject(new Error('Operation blocked. Execution identity mismatch.'));
+                resolve({ message: 'Target task removed successfully from runtime ledger.' });
             });
         });
     }
-};\n
+};
