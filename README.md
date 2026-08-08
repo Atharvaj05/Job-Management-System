@@ -88,7 +88,7 @@ The backend is built around a highly structured **Controller-Service-Repository 
                                           +-----------------------------+
                                           |  Persistent Log Repository  |
                                           +-----------------------------+
-
+```
 ## 🔁 Detailed Asynchronous Request Lifecycle
 
 * **Ingress Traffic Control:** Incoming payloads clear initial format validation checks inside dedicated route middleware layers (`inputValidator.js`).
